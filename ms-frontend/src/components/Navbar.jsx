@@ -3,6 +3,7 @@ import { Navbar, Nav, Container, NavDropdown, Badge } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import "./Navbar.css"; // Importamos el archivo CSS que crearemos
 
 const MenuBar = () => {
   const { user, isAuthenticated, loading, logout } = useAuth();
@@ -61,25 +62,36 @@ const MenuBar = () => {
 
   if (loading) {
     return (
-      <Navbar bg="dark" variant="dark" expand="lg">
+      <Navbar expand="lg" className="custom-navbar">
         <Container>
-          <Navbar.Brand as={Link} to="/">ENCUENTRO</Navbar.Brand>
+          <Navbar.Brand as={Link} to="/" className="brand-logo">
+            <i className="bi bi-music-note-beamed me-2"></i>
+            ENCUENTRO
+          </Navbar.Brand>
+          <div className="navbar-loader">
+            <div className="spinner-grow spinner-grow-sm text-light" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
         </Container>
       </Navbar>
     );
   }
 
   return (
-    <Navbar bg="dark" variant="dark" expand="lg">
+    <Navbar expand="lg" className="custom-navbar">
       <Container>
-        <Navbar.Brand as={Link} to="/">ENCUENTRO</Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Brand as={Link} to="/" className="brand-logo">
+          <i className="bi bi-music-note-beamed me-2"></i>
+          ENCUENTRO
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" className="custom-toggler" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto">
-            <Nav.Link as={Link} to="/">
+          <Nav className="ms-auto nav-links">
+            <Nav.Link as={Link} to="/" className="nav-link-custom">
               <i className="bi bi-house-door"></i> Inicio
             </Nav.Link>
-            <Nav.Link as={Link} to="/conciertos">
+            <Nav.Link as={Link} to="/conciertos" className="nav-link-custom">
               <i className="bi bi-music-note"></i> Conciertos
             </Nav.Link>
             
@@ -87,18 +99,16 @@ const MenuBar = () => {
               <>
                 {/* Mostrar "Administrar Conciertos" solo si el usuario es admin */}
                 {user?.rol === "admin" && (
-                  <Nav.Link as={Link} to="/admin/conciertos" className="admin-link">
+                  <Nav.Link as={Link} to="/admin/conciertos" className="admin-link nav-link-custom">
                     <i className="bi bi-music-note-list"></i> Administrar Conciertos
                   </Nav.Link>
                 )}
-                <Nav.Link as={Link} to="/cart" className="position-relative">
+                <Nav.Link as={Link} to="/cart" className="position-relative nav-link-custom cart-link">
                   <i className="bi bi-cart3"></i> Carrito
                   {cartCount > 0 && (
                     <Badge 
-                      bg="danger" 
                       pill 
-                      className="position-absolute top-0 start-100 translate-middle"
-                      style={{ fontSize: '0.7em' }}
+                      className="cart-badge position-absolute top-0 start-100 translate-middle"
                     >
                       {cartCount}
                     </Badge>
@@ -107,13 +117,10 @@ const MenuBar = () => {
                 <NavDropdown 
                   title={
                     <>
-                      <i className="bi bi-person-circle"></i> {` Hola, ${user?.nombres || 'Usuario'}`}
+                      <i className="bi bi-person-circle"></i> {` Hola, ${user?.nombres?.split(' ')[0] || 'Usuario'}`}
                       {user?.rol === "admin" && (
                         <Badge 
-                          bg="warning" 
-                          text="dark" 
-                          className="ms-2"
-                          style={{ fontSize: '0.7em' }}
+                          className="admin-badge ms-2"
                         >
                           ADMIN
                         </Badge>
@@ -122,23 +129,34 @@ const MenuBar = () => {
                   }
                   id="user-dropdown"
                   align="end"
+                  className="user-dropdown"
                 >
-                  <NavDropdown.Item as={Link} to="/mis-reservas">
+                  <div className="dropdown-header">
+                    <div className="user-icon">
+                      <i className="bi bi-person-circle"></i>
+                    </div>
+                    <div className="user-info">
+                      <span className="user-name">{user?.nombres || 'Usuario'}</span>
+                      <span className="user-email">{user?.email}</span>
+                    </div>
+                  </div>
+                  <NavDropdown.Divider />
+                  <NavDropdown.Item as={Link} to="/mis-reservas" className="dropdown-item-custom">
                     <i className="bi bi-ticket-perforated"></i> Mis Reservas
                   </NavDropdown.Item>
                
                   <NavDropdown.Divider />
-                  <NavDropdown.Item onClick={handleLogout}>
+                  <NavDropdown.Item onClick={handleLogout} className="dropdown-item-custom logout-item">
                     <i className="bi bi-box-arrow-right"></i> Cerrar Sesión
                   </NavDropdown.Item>
                 </NavDropdown>
               </>
             ) : (
               <>
-                <Nav.Link as={Link} to="/login">
+                <Nav.Link as={Link} to="/login" className="nav-link-custom auth-link">
                   <i className="bi bi-box-arrow-in-right"></i> Iniciar Sesión
                 </Nav.Link>
-                <Nav.Link as={Link} to="/register">
+                <Nav.Link as={Link} to="/register" className="nav-link-custom register-link">
                   <i className="bi bi-person-plus"></i> Registrarse
                 </Nav.Link>
               </>

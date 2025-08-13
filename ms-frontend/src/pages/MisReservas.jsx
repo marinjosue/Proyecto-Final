@@ -110,8 +110,8 @@ const MisReservas = () => {
         return;
       }
       
-      // Cargar entradas del usuario usando el token
-      const entradasData = await entradaService.getMisEntradas();
+      // Cargar entradas del usuario usando el ID del usuario
+      const entradasData = await entradaService.getMisEntradas(user.id);
       console.log("📥 Entradas cargadas:", entradasData);
       setEntradas(entradasData || []);
       

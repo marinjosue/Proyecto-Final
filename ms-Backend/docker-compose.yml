@@ -56,8 +56,16 @@ services:
       - MAIL_USER=josuisaac2002@gmail.com
       - MAIL_PASS=frsu gppj rkgi yuzq
       - MAIL_FROM=josuisaac2002@gmail.com
+      # Configuración de la base de datos de conciertos
+      - DB_HOST=cockroach-1
+      - DB_PORT=26257
+      - DB_USER=root
+      - DB_PASSWORD=
+      - DB_NAME=conciertos
+      - DB_SSL=false
     depends_on:
       - rabbitmq
+      - cockroach-1
     restart: unless-stopped
     networks:
       - encuentro-network

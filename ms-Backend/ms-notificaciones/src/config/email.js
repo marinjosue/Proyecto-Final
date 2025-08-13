@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
  * @param {string} options.message - Mensaje de texto
  * @param {string} options.qrImageBase64 - Imagen QR en base64
  */
-async function enviarCorreo({ to, subject, message, qrImageBase64, evento, fecha, lugar }) {
+async function enviarCorreo({ to, subject, message, qrImageBase64, evento, fecha, lugar, entrada_id }) {
   try {
     // Crear un HTML más atractivo con el QR incrustado
     const htmlContent = `
@@ -31,6 +31,7 @@ async function enviarCorreo({ to, subject, message, qrImageBase64, evento, fecha
           <p><strong>Evento:</strong> ${evento}</p>
           <p><strong>Fecha:</strong> ${fecha}</p>
           <p><strong>Lugar:</strong> ${lugar}</p>
+          <p><strong>ID de Entrada:</strong> ${entrada_id || 'No disponible'}</p>
         </div>
         
         <div style="text-align: center; margin: 25px 0;">

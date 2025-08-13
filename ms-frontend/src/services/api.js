@@ -355,9 +355,9 @@ export const reservaService = {
 
 // Servicios de entradas
 export const entradaService = {
-  // Obtener mis entradas confirmadas (usando el token del usuario)
-  getMisEntradas: async () => {
-    const response = await api.get('/api/entradas');
+  // Obtener mis entradas confirmadas (usando el ID del usuario)
+  getMisEntradas: async (usuarioId) => {
+    const response = await api.get(`/api/entradas/usuario/${usuarioId}`);
     return response.data;
   },
   
@@ -383,8 +383,8 @@ export const cartService = {
 // Servicios de órdenes/pedidos - ahora basado en entradas
 export const orderService = {
   // Obtener entradas del usuario (equivalente a órdenes)
-  getUserEntradas: async () => {
-    const response = await api.get('/api/entradas');
+  getUserEntradas: async (usuarioId) => {
+    const response = await api.get(`/api/entradas/usuario/${usuarioId}`);
     return response.data;
   },
   

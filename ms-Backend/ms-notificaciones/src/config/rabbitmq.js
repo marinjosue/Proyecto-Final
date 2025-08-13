@@ -1,5 +1,6 @@
 const amqp = require('amqplib');
 const { enviarCorreo } = require('./email');
+const { obtenerConciertoPorId } = require('./dbEventos');
 
 let channel;
 
@@ -17,15 +18,39 @@ async function listenToEvents() {
     const data = JSON.parse(msg.content.toString());
     console.log('[Evento recibido]:', data);
 
+    // Obtener información del evento desde la base de datos
+    let nombreEvento = 'evento';
+    let fecha = 'Por confirmar';
+    let lugar = 'Por confirmar';
+    
+    try {
+      // Obtener detalles del evento usando el ID
+      const eventoDetails = await obtenerConciertoPorId(data.evento);
+      if (eventoDetails) {
+        nombreEvento = eventoDetails.nombre;
+        fecha = eventoDetails.fecha ? new Date(eventoDetails.fecha).toLocaleDateString() : 'Por confirmar';
+        lugar = eventoDetails.lugar || 'Por confirmar';
+      }
+    } catch (error) {
+      console.error('[Error] No se pudo obtener la información del evento:', error);
+    }
+    
+    // Extraer la parte de la imagen base64 del QR si viene con prefijo data:image/png;base64,
+    let qrImageBase64 = data.qr;
+    if (qrImageBase64 && qrImageBase64.includes('base64,')) {
+      qrImageBase64 = qrImageBase64.split('base64,')[1];
+    }
+
     // Enviar correo con la imagen QR
     await enviarCorreo({
       to: data.correo || 'usuario@ejemplo.com',
       subject: 'Tu entrada para el evento',
-      message: `Tu entrada para el evento ${data.evento} ha sido generada con éxito.`,
-      qrImageBase64: data.qrBase64, // La imagen del QR en formato base64
-      evento: data.evento,
-      fecha: data.fecha || 'Por confirmar',
-      lugar: data.lugar || 'Por confirmar'
+      message: `Tu entrada para el evento ${nombreEvento} ha sido generada con éxito.`,
+      qrImageBase64: qrImageBase64,
+      evento: nombreEvento,
+      fecha: fecha,
+      lugar: lugar,
+      entrada_id: data.entrada_id
     });
 
     channel.ack(msg);
