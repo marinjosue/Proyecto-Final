@@ -1,0 +1,67 @@
+_format_version: "3.0"
+services:
+  - name: ms-reservas
+    url: http://ms-reservas:3001/api/v1/reservas
+    routes:
+      - name: reservas-route
+        paths:
+          - /api/reservas
+        strip_path: true
+
+  - name: ms-entradas
+    url: http://ms-entradas:3003/api/v1/entradas
+    routes:
+      - name: entradas-route
+        paths:
+          - /api/entradas
+        strip_path: true
+
+  - name: ms-notificaciones
+    url: http://ms-notificaciones:3002/api/v1/notificaciones
+    routes:
+      - name: notificaciones-route
+        paths:
+          - /api/notificaciones
+        strip_path: true
+
+  - name: ms-conciertos
+    url: http://ms-conciertos:3004/api/v1/conciertos
+    routes:
+      - name: conciertos-route
+        paths:
+          - /api/conciertos
+        strip_path: true
+        
+  - name: ms-zonas
+    url: http://ms-conciertos:3004/api/v1/zonas
+    routes:
+      - name: zonas-route
+        paths:
+          - /api/zonas
+        strip_path: true
+
+  - name: ms-usuarios
+    url: http://ms-usuarios:3005/api/v1/usuarios
+    routes:
+      - name: usuarios-route
+        paths:
+          - /api/usuarios
+        strip_path: true
+
+  - name: ms-asientos
+    url: http://ms-reservas:3001/api/v1
+    routes:
+      - name: asientos-estado-route
+        paths:
+          - /api/zonas
+        strip_path: false
+        methods:
+          - GET
+      - name: asientos-bloquear-route
+        paths:
+          - /api/asientos
+        strip_path: false
+        methods:
+          - POST
+  
+
