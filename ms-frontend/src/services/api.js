@@ -314,7 +314,7 @@ export const reservaService = {
   confirmarReserva: async (reservaId, metodoPago = "tarjeta") => {
     console.log(`Confirmando reserva ${reservaId} con método de pago: ${metodoPago}`);
     try {
-      const response = await api.post(`/api/reservas/${reservaId}/confirmar`, {
+      const response = await api.put(`/api/reservas/${reservaId}/confirmar`, {
         metodo_pago: metodoPago
       });
       console.log("✅ Reserva confirmada exitosamente:", response.data);
@@ -331,24 +331,17 @@ export const reservaService = {
     return response.data;
   },
   
-  // Obtener reservas por usuario
-  getReservasByUsuario: async (usuarioId) => {
-    const response = await api.get(`/api/reservas/${usuarioId}`);
-    return response.data;
-  },
-  
-  // Obtener mis reservas (usando el ID de usuario)
-  getMisReservas: async () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (!user.id) {
-      throw new Error('No hay un usuario autenticado');
+  // Obtener mi reserva por ID (id de la tabla reservas)
+  getMiReservaById: async (reservaId) => {
+    if (!reservaId) {
+      throw new Error('Debe proporcionar el ID de la reserva');
     }
-    console.log("🔍 Obteniendo reservas para usuario ID:", user.id);
+    console.log("🔍 Obteniendo reserva por ID:", reservaId);
     try {
-      const response = await api.get(`/api/reservas/${user.id}`);
+      const response = await api.get(`/api/reservas/${reservaId}`);
       return response.data;
     } catch (error) {
-      console.error("❌ Error obteniendo reservas:", error);
+      console.error("❌ Error obteniendo reserva por ID:", error);
       throw error;
     }
   },
@@ -362,8 +355,8 @@ export const reservaService = {
 
 // Servicios de entradas
 export const entradaService = {
-  // Obtener todas las entradas
-  getEntradas: async () => {
+  // Obtener mis entradas confirmadas (usando el token del usuario)
+  getMisEntradas: async () => {
     const response = await api.get('/api/entradas');
     return response.data;
   },
@@ -371,18 +364,6 @@ export const entradaService = {
   // Obtener entrada por ID
   getEntradaById: async (id) => {
     const response = await api.get(`/api/entradas/${id}`);
-    return response.data;
-  },
-  
-  // Obtener entradas por usuario
-  getEntradasByUsuario: async (usuarioId) => {
-    const response = await api.get(`/api/entradas/usuario/${usuarioId}`);
-    return response.data;
-  },
-  
-  // Obtener mis entradas (usando el token)
-  getMisEntradas: async () => {
-    const response = await api.get('/api/entradas/usuario/me');
     return response.data;
   }
 };
@@ -403,7 +384,7 @@ export const cartService = {
 export const orderService = {
   // Obtener entradas del usuario (equivalente a órdenes)
   getUserEntradas: async () => {
-    const response = await api.get('/api/entradas/usuario/me');
+    const response = await api.get('/api/entradas');
     return response.data;
   },
   

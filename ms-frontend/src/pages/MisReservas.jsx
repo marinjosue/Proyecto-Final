@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Container, Card, Button, Row, Col, Alert, Spinner, Badge, Modal, Tabs, Tab, ProgressBar } from "react-bootstrap";
 import { reservaService, entradaService, conciertoService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { useLocation } from "react-router-dom";
 import QRCode from "react-qr-code"; // Asegúrate de instalar: npm install react-qr-code
 
 // Componente para contar el tiempo restante
@@ -86,6 +87,16 @@ const MisReservas = () => {
   const [activeTab, setActiveTab] = useState("entradas");
   
   const { isAuthenticated, user } = useAuth();
+  const location = useLocation();
+
+  // Check URL params to set initial tab
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+    if (tabParam && (tabParam === 'entradas' || tabParam === 'reservas')) {
+      setActiveTab(tabParam);
+    }
+  }, [location.search]);
 
   // Define loadUserData with useCallback
   const loadUserData = useCallback(async () => {
@@ -99,34 +110,37 @@ const MisReservas = () => {
         return;
       }
       
-      // Cargar entradas del usuario usando su ID
-      const entradasData = await entradaService.getEntradasByUsuario(user.id);
+      // Cargar entradas del usuario usando el token
+      const entradasData = await entradaService.getMisEntradas();
       console.log("📥 Entradas cargadas:", entradasData);
       setEntradas(entradasData || []);
       
-      // Intentar cargar reservas pendientes del usuario
+      // Cargar reservas desde localStorage y consultar cada una individualmente
+      const misReservasIds = JSON.parse(localStorage.getItem('misReservas') || '[]');
+      console.log("📥 IDs de reservas en localStorage:", misReservasIds);
+      
       let currentReservas = [];
-      try {
-        const reservasData = await reservaService.getMisReservas();
-        console.log("📥 Reservas cargadas:", reservasData);
-        
-        if (Array.isArray(reservasData)) {
-          setReservas(reservasData);
-          currentReservas = reservasData;
-        } else if (typeof reservasData === 'object' && reservasData !== null) {
-          // Si la respuesta es un objeto único, convertirlo a array
-          setReservas([reservasData]);
-          currentReservas = [reservasData];
-          console.log("⚠️ Convertido objeto de reserva a array:", [reservasData]);
-        } else {
-          setReservas([]);
-          currentReservas = [];
+      
+      for (const reservaInfo of misReservasIds) {
+        try {
+          const reservaData = await reservaService.getMiReservaById(reservaInfo.id);
+          console.log(`📥 Reserva ${reservaInfo.id} cargada:`, reservaData);
+          
+          if (reservaData) {
+            currentReservas.push(reservaData);
+          }
+        } catch (reservaError) {
+          console.log(`⚠️ No se pudo cargar reserva ${reservaInfo.id}:`, reservaError.message);
+          
+          // Si la reserva no existe (404), removerla del localStorage
+          if (reservaError.response?.status === 404) {
+            const updatedReservas = misReservasIds.filter(r => r.id !== reservaInfo.id);
+            localStorage.setItem('misReservas', JSON.stringify(updatedReservas));
+          }
         }
-      } catch (reservasError) {
-        console.log("⚠️ No se pudieron cargar reservas pendientes:", reservasError.message);
-        setReservas([]);
-        currentReservas = [];
       }
+      
+      setReservas(currentReservas);
       
       // Recopilar todos los IDs de eventos (tanto de entradas como de reservas)
       const eventosIds = new Set([
@@ -228,6 +242,11 @@ const MisReservas = () => {
         text: "¡Reserva confirmada! Se está generando tu entrada automáticamente." 
       });
       
+      // Eliminar la reserva confirmada del localStorage ya que se convertirá en entrada
+      const misReservas = JSON.parse(localStorage.getItem('misReservas') || '[]');
+      const updatedReservas = misReservas.filter(r => r.id !== reservaId);
+      localStorage.setItem('misReservas', JSON.stringify(updatedReservas));
+      
       // Cerrar modal
       setShowConfirmPaymentModal(false);
       setSelectedReserva(null);
@@ -278,6 +297,11 @@ const MisReservas = () => {
       console.log(`Eliminando reserva ${reservaId}`);
       
       await reservaService.deleteReserva(reservaId);
+      
+      // Eliminar la reserva del localStorage
+      const misReservas = JSON.parse(localStorage.getItem('misReservas') || '[]');
+      const updatedReservas = misReservas.filter(r => r.id !== reservaId);
+      localStorage.setItem('misReservas', JSON.stringify(updatedReservas));
       
       // Eliminar la reserva del estado local antes de recargar datos completos
       setReservas(prev => prev.filter(r => r.id !== reservaId));

@@ -121,6 +121,17 @@ const ConciertoDetalle = () => {
 
       const reserva = await reservaService.createReserva(reservaData);
       
+      // Guardar el ID de la reserva en localStorage para poder consultarla después
+      const misReservas = JSON.parse(localStorage.getItem('misReservas') || '[]');
+      misReservas.push({
+        id: reserva.id,
+        fecha_creacion: new Date().toISOString(),
+        evento_id: id,
+        zona_id: selectedZona,
+        cantidad: parseInt(cantidad)
+      });
+      localStorage.setItem('misReservas', JSON.stringify(misReservas));
+      
       setMessage({ 
         type: "success", 
         text: `¡Reserva creada exitosamente! ID: ${reserva.id}. Ve a "Mis Reservas" para confirmarla.` 
@@ -132,7 +143,7 @@ const ConciertoDetalle = () => {
       
       // Opcional: Redireccionar a mis reservas después de 3 segundos
       setTimeout(() => {
-        navigate('/mis-reservas');
+        navigate('/mis-reservas?tab=reservas');
       }, 3000);
       
     } catch (err) {
