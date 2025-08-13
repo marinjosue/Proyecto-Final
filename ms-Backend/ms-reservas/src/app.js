@@ -1,21 +1,25 @@
 const express = require('express');
-const cors = require('cors');
-const reservaRoutes = require('./routes/reserva.routes');
-const asientoRoutes = require('./routes/asiento.routes');
-
 const app = express();
 
-app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:8000'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+const reservaRoutes = require('./routes/reserva.routes');
+
+// Enable CORS for all routes
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    
+    next();
+});
 
 app.use(express.json());
 app.use('/api/v1/reservas', reservaRoutes);
-app.use('/api/v1', asientoRoutes); // Nuevas rutas de asientos
 
+// Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({
         status: 'healthy',

@@ -1,30 +1,13 @@
-// D:\Plataforma-Encuentro\ms-Backend\ms-usuarios\src\controllers\usuario.controller.js
 const usuarioService = require('../services/usuario.service');
 
 class UsuarioController {
+    
     async register(req, res) {
         try {
             const nuevoUsuario = await usuarioService.registrar(req.body);
-            return res.status(201).json({
-                message: 'Usuario registrado con éxito',
-                usuario: nuevoUsuario
-            });
+            res.status(201).json({ message: 'Usuario registrado', usuario: nuevoUsuario });
         } catch (error) {
-            let status = 400;
-            let mensaje = 'Ocurrió un error al registrar el usuario';
-
-            if (error.message.includes('Todos los campos son obligatorios')) {
-                status = 400;
-                mensaje = 'Debe completar todos los campos';
-            } else if (error.message.includes('correo ya registrado')) {
-                status = 409; // Conflicto
-                mensaje = 'El correo ya está en uso';
-            } else if (error.message.includes('Contraseña insegura')) {
-                status = 400;
-                mensaje = 'La contraseña no cumple con los requisitos';
-            }
-
-            return res.status(status).json({ error: mensaje });
+            res.status(400).json({ error: error.message });
         }
     }
 

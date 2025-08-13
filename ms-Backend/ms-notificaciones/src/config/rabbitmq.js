@@ -17,11 +17,15 @@ async function listenToEvents() {
     const data = JSON.parse(msg.content.toString());
     console.log('[Evento recibido]:', data);
 
-    // Simulación de notificación
+    // Enviar correo con la imagen QR
     await enviarCorreo({
       to: data.correo || 'usuario@ejemplo.com',
-      subject: 'Código QR generado',
-      message: `Tu entrada para el evento ${data.evento} ha sido generada con éxito.`
+      subject: 'Tu entrada para el evento',
+      message: `Tu entrada para el evento ${data.evento} ha sido generada con éxito.`,
+      qrImageBase64: data.qrBase64, // La imagen del QR en formato base64
+      evento: data.evento,
+      fecha: data.fecha || 'Por confirmar',
+      lugar: data.lugar || 'Por confirmar'
     });
 
     channel.ack(msg);

@@ -1,5 +1,6 @@
-// D:\Plataforma-Encuentro\ms-frontend\src\pages\Register.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "animate.css";
 
 const Register = () => {
@@ -11,22 +12,33 @@ const Register = () => {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value.trim(),
+      [e.target.name]: e.target.value, // Removido el .trim() para permitir espacios mientras escribes
     });
   };
 
   const validateForm = () => {
-    if (!formData.nombres || !formData.apellidos || !formData.correo || !formData.password) {
+    // Aplicar trim solo para validación, no afecta el estado
+    const trimmedData = {
+      nombres: formData.nombres.trim(),
+      apellidos: formData.apellidos.trim(),
+      correo: formData.correo.trim(),
+      password: formData.password.trim()
+    };
+    
+    if (!trimmedData.nombres || !trimmedData.apellidos || !trimmedData.correo || !trimmedData.password) {
       return "Todos los campos son obligatorios ⚠️";
     }
-    if (!/\S+@\S+\.\S+/.test(formData.correo)) {
+    if (!/\S+@\S+\.\S+/.test(trimmedData.correo)) {
       return "El correo electrónico no es válido 📧";
     }
-    if (formData.password.length < 6) {
+    if (trimmedData.password.length < 6) {
       return "La contraseña debe tener al menos 6 caracteres 🔒";
     }
     return null;
@@ -45,48 +57,60 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const apiUrl = process.env.NODE_ENV === 'development' 
-        ? '/api/usuarios/register' 
-        : 'http://localhost:8000/api/usuarios/register';
+      // Preparar datos con trim para enviar al servidor
+      const dataToSend = {
+        nombres: formData.nombres.trim(),
+        apellidos: formData.apellidos.trim(),
+        correo: formData.correo.trim(),
+        password: formData.password.trim()
+      };
+      
+      console.log("Datos a enviar:", dataToSend);
+      const result = await register(dataToSend);
+      
+      if (result.success) {
+        setMessage({ 
+          type: "success", 
+          text: "¡Registro exitoso! Bienvenido a la plataforma." 
+        });
+        
+        // Clear form after successful registration
+        setFormData({ 
+          nombres: "", 
+          apellidos: "", 
+          correo: "", 
+          password: "" 
+        });
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Error en el registro');
+        // Redirect after a delay
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
+      } else {
+        console.error("Error del servidor:", result.message);
+        setMessage({ type: "error", text: result.message || "Error al registrar usuario" });
+      }
+    } catch (error) {
+      console.error('Registration error details:', error);
+      
+      let errorMessage = "Ocurrió un error al registrar el usuario 🚨";
+      
+      if (error.response) {
+        // Error del servidor (400, 500, etc.)
+        console.error("Error response:", error.response.data);
+        console.error("Error status:", error.response.status);
+        errorMessage = error.response.data?.message || `Error del servidor (${error.response.status})`;
+      } else if (error.request) {
+        // Error de red (no se pudo conectar al servidor)
+        console.error("Network error:", error.request);
+        errorMessage = "Error de conexión. Verifica que el servidor esté funcionando.";
+      } else {
+        // Otro tipo de error
+        console.error("Error:", error.message);
+        errorMessage = error.message;
       }
       
-      setMessage({ 
-        type: "success", 
-        text: data.message || "¡Registro exitoso! Por favor inicia sesión." 
-      });
-      
-      // Clear form after successful registration
-      setFormData({ 
-        nombres: "", 
-        apellidos: "", 
-        correo: "", 
-        password: "" 
-      });
-
-      // Redirect to login after a delay
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 2000);
-
-    } catch (error) {
-      console.error('Registration error:', error);
-      let errText = error.message || "Ocurrió un error al registrar el usuario 🚨";
-      setMessage({ type: "error", text: errText });
+      setMessage({ type: "error", text: errorMessage });
     } finally {
       setLoading(false);
     }

@@ -1,116 +1,250 @@
 import React, { useState } from "react";
-import { Form, Button, Container, Row, Col } from "react-bootstrap";
-import { v4 as uuidv4 } from "uuid";
+import { Form, Button, Container, Row, Col, Alert } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { conciertoService } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 const CrearConcierto = () => {
-  const [evento, setEvento] = useState({
+  const [formData, setFormData] = useState({
     nombre: "",
     categoria: "",
     ciudad: "",
     fecha: "",
-    lugar: ""
+    lugar: "",
+    descripcion: "",
+    precio: ""
   });
+  
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+  
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
 
-  const [tickets, setTickets] = useState({
-    evento_id: "",
-    zona_id: "",
-    cantidad: ""
-  });
+  // Verificar si el usuario está autenticado
+  if (!isAuthenticated) {
+    return (
+      <Container className="py-4">
+        <Alert variant="warning">
+          Debes <a href="/login">iniciar sesión</a> para crear un concierto.
+        </Alert>
+      </Container>
+    );
+  }
 
-  const [eventoCreado, setEventoCreado] = useState(null);
-
-  const handleEventoChange = (e) => {
-    setEvento({
-      ...evento,
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleTicketChange = (e) => {
-    setTickets({
-      ...tickets,
-      [e.target.name]: e.target.value
-    });
+  const validateForm = () => {
+    if (!formData.nombre || !formData.categoria || !formData.ciudad || 
+        !formData.fecha || !formData.lugar) {
+      return "Todos los campos obligatorios deben ser completados";
+    }
+    
+    // Validar que la fecha no sea en el pasado
+    const selectedDate = new Date(formData.fecha);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+      return "La fecha del concierto no puede ser en el pasado";
+    }
+    
+    // Validar precio si se proporciona
+    if (formData.precio && (isNaN(formData.precio) || parseFloat(formData.precio) < 0)) {
+      return "El precio debe ser un número válido mayor o igual a 0";
+    }
+    
+    return null;
   };
 
-  const handleCrearEvento = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const nuevoEvento = { id: uuidv4(), ...evento };
-    setEventoCreado(nuevoEvento);
-    setTickets((prev) => ({
-      ...prev,
-      evento_id: nuevoEvento.id
-    }));
-    alert("🎉 Concierto creado con éxito");
-  };
+    setMessage({ type: "", text: "" });
 
-  const handleCrearTicket = (e) => {
-    e.preventDefault();
-    const nuevoTicket = { ...tickets };
-    console.log("✅ Ticket creado:", nuevoTicket);
-    alert("🎟️ Ticket creado correctamente");
+    const errorMsg = validateForm();
+    if (errorMsg) {
+      setMessage({ type: "error", text: errorMsg });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Preparar datos para enviar
+      const conciertoData = {
+        ...formData,
+        precio: formData.precio ? parseFloat(formData.precio) : null,
+        organizador_id: user?.id || 'default-organizer' // Usar el ID del usuario autenticado
+      };
+
+      await conciertoService.createConcierto(conciertoData);
+      
+      setMessage({ 
+        type: "success", 
+        text: "¡Concierto creado exitosamente!" 
+      });
+      
+      // Limpiar formulario
+      setFormData({
+        nombre: "",
+        categoria: "",
+        ciudad: "",
+        fecha: "",
+        lugar: "",
+        descripcion: "",
+        precio: ""
+      });
+
+      // Redirigir después de un delay
+      setTimeout(() => {
+        navigate('/conciertos');
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error creating concierto:', error);
+      setMessage({ 
+        type: "error", 
+        text: error.response?.data?.message || "Error al crear el concierto" 
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Container className="py-4">
       <h2 style={{ color: "#ff4081" }}>🎶 Crear Concierto</h2>
 
-      {/* Formulario de concierto */}
-      <Form onSubmit={handleCrearEvento} className="bg-dark text-white p-4 rounded mb-4">
+      {message.text && (
+        <Alert variant={message.type === "success" ? "success" : "danger"} className="mb-4">
+          {message.text}
+        </Alert>
+      )}
+
+      <Form onSubmit={handleSubmit} className="bg-dark text-white p-4 rounded">
         <Row>
           <Col md={6}>
             <Form.Group className="mb-3">
-              <Form.Label>Nombre</Form.Label>
-              <Form.Control type="text" name="nombre" value={evento.nombre} onChange={handleEventoChange} required />
+              <Form.Label>Nombre del Concierto *</Form.Label>
+              <Form.Control 
+                type="text" 
+                name="nombre" 
+                value={formData.nombre} 
+                onChange={handleChange} 
+                placeholder="Ej: Rock Fest 2025"
+                required 
+              />
             </Form.Group>
           </Col>
           <Col md={6}>
             <Form.Group className="mb-3">
-              <Form.Label>Categoría</Form.Label>
-              <Form.Control type="text" name="categoria" value={evento.categoria} onChange={handleEventoChange} required />
+              <Form.Label>Categoría *</Form.Label>
+              <Form.Select 
+                name="categoria" 
+                value={formData.categoria} 
+                onChange={handleChange} 
+                required
+              >
+                <option value="">Selecciona una categoría</option>
+                <option value="Rock">Rock</option>
+                <option value="Pop">Pop</option>
+                <option value="Electrónica">Electrónica</option>
+                <option value="Reggaetón">Reggaetón</option>
+                <option value="Jazz">Jazz</option>
+                <option value="Clásica">Clásica</option>
+                <option value="Hip Hop">Hip Hop</option>
+                <option value="Otro">Otro</option>
+              </Form.Select>
             </Form.Group>
           </Col>
         </Row>
+        
         <Row>
           <Col md={6}>
             <Form.Group className="mb-3">
-              <Form.Label>Ciudad</Form.Label>
-              <Form.Control type="text" name="ciudad" value={evento.ciudad} onChange={handleEventoChange} required />
+              <Form.Label>Ciudad *</Form.Label>
+              <Form.Control 
+                type="text" 
+                name="ciudad" 
+                value={formData.ciudad} 
+                onChange={handleChange} 
+                placeholder="Ej: Madrid"
+                required 
+              />
             </Form.Group>
           </Col>
           <Col md={6}>
             <Form.Group className="mb-3">
-              <Form.Label>Fecha</Form.Label>
-              <Form.Control type="date" name="fecha" value={evento.fecha} onChange={handleEventoChange} required />
+              <Form.Label>Fecha *</Form.Label>
+              <Form.Control 
+                type="date" 
+                name="fecha" 
+                value={formData.fecha} 
+                onChange={handleChange} 
+                required 
+              />
             </Form.Group>
           </Col>
         </Row>
+
+        <Row>
+          <Col md={8}>
+            <Form.Group className="mb-3">
+              <Form.Label>Lugar del Evento *</Form.Label>
+              <Form.Control 
+                type="text" 
+                name="lugar" 
+                value={formData.lugar} 
+                onChange={handleChange} 
+                placeholder="Ej: Estadio Santiago Bernabéu"
+                required 
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group className="mb-3">
+              <Form.Label>Precio (opcional)</Form.Label>
+              <Form.Control 
+                type="number" 
+                step="0.01"
+                min="0"
+                name="precio" 
+                value={formData.precio} 
+                onChange={handleChange} 
+                placeholder="0.00"
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
         <Form.Group className="mb-3">
-          <Form.Label>Lugar</Form.Label>
-          <Form.Control type="text" name="lugar" value={evento.lugar} onChange={handleEventoChange} required />
+          <Form.Label>Descripción (opcional)</Form.Label>
+          <Form.Control 
+            as="textarea" 
+            rows={3}
+            name="descripcion" 
+            value={formData.descripcion} 
+            onChange={handleChange} 
+            placeholder="Describe el concierto, artistas, etc."
+          />
         </Form.Group>
-        <Button type="submit" style={{ background: "linear-gradient(90deg, #ff4081, #673ab7)", border: "none" }}>
-          Crear Concierto
+
+        <Button 
+          type="submit" 
+          disabled={loading}
+          style={{ 
+            background: "linear-gradient(90deg, #ff4081, #673ab7)", 
+            border: "none" 
+          }}
+        >
+          {loading ? "Creando..." : "Crear Concierto"}
         </Button>
       </Form>
-
-      {/* Formulario de tickets (solo aparece si hay evento creado) */}
-      {eventoCreado && (
-        <Form onSubmit={handleCrearTicket} className="bg-secondary text-white p-4 rounded">
-          <h4>🎟️ Crear Tickets para {eventoCreado.nombre}</h4>
-          <Form.Group className="mb-3">
-            <Form.Label>Zona ID</Form.Label>
-            <Form.Control type="text" name="zona_id" value={tickets.zona_id} onChange={handleTicketChange} required />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Cantidad</Form.Label>
-            <Form.Control type="number" name="cantidad" value={tickets.cantidad} onChange={handleTicketChange} required />
-          </Form.Group>
-          <Button type="submit" style={{ background: "linear-gradient(90deg, #00bcd4, #4caf50)", border: "none" }}>
-            Crear Ticket
-          </Button>
-        </Form>
-      )}
     </Container>
   );
 };

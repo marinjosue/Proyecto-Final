@@ -3,7 +3,7 @@ const dbConciertos = require('../config/dbConciertos');
 const dbUsuarios = require('../config/dbUsuarios'); 
 const { v4: uuidv4 } = require('uuid');
 
-async function createReserva({ evento_id, zona_id, cantidad, usuario_id, asientos_especificos }) {
+async function createReserva({ evento_id, zona_id, cantidad, usuario_id }) {
     const id = uuidv4();
 
     // Validar que exista el concierto
@@ -17,10 +17,10 @@ async function createReserva({ evento_id, zona_id, cantidad, usuario_id, asiento
 
     const vencimiento = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
     const result = await db.query(`
-    INSERT INTO reservas (id, evento_id, zona_id, cantidad, estado, vencimiento, usuario_id, asientos_especificos)
-    VALUES ($1, $2, $3, $4, 'temporal', $5, $6, $7)
+    INSERT INTO reservas (id, evento_id, zona_id, cantidad, estado, vencimiento, usuario_id)
+    VALUES ($1, $2, $3, $4, 'temporal', $5, $6)
     RETURNING *`,
-        [id, evento_id, zona_id, cantidad, vencimiento, usuario_id, asientos_especificos]);
+        [id, evento_id, zona_id, cantidad, vencimiento, usuario_id]);
 
     return result.rows[0];
 }
@@ -49,12 +49,8 @@ async function confirmarReserva(id, usuario_id) {
     UPDATE reservas SET estado = 'confirmada' WHERE id = $1 RETURNING *`,
         [id]);
 
-    // Retornar también el correo y asientos específicos
-    return { 
-        ...confirmada.rows[0], 
-        correo,
-        asientos_especificos: reserva.rows[0].asientos_especificos 
-    };
+    // Retornar también el correo
+    return { ...confirmada.rows[0], correo };
 }
 
 async function getReservaById(id) {

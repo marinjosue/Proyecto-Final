@@ -7,6 +7,31 @@ services:
         paths:
           - /api/reservas
         strip_path: true
+    plugins:
+      - name: cors
+        config:
+          origins:
+          - "*"
+          methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+          headers:
+          - Accept
+          - Accept-Version
+          - Content-Length
+          - Content-MD5
+          - Content-Type
+          - Date
+          - X-Auth-Token
+          - Authorization
+          exposed_headers:
+          - X-Auth-Token
+          credentials: true
+          max_age: 3600
+          preflight_continue: false
 
   - name: ms-entradas
     url: http://ms-entradas:3003/api/v1/entradas
@@ -15,6 +40,31 @@ services:
         paths:
           - /api/entradas
         strip_path: true
+    plugins:
+      - name: cors
+        config:
+          origins:
+          - "*"
+          methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+          headers:
+          - Accept
+          - Accept-Version
+          - Content-Length
+          - Content-MD5
+          - Content-Type
+          - Date
+          - X-Auth-Token
+          - Authorization
+          exposed_headers:
+          - X-Auth-Token
+          credentials: true
+          max_age: 3600
+          preflight_continue: false
 
   - name: ms-notificaciones
     url: http://ms-notificaciones:3002/api/v1/notificaciones
@@ -23,6 +73,31 @@ services:
         paths:
           - /api/notificaciones
         strip_path: true
+    plugins:
+      - name: cors
+        config:
+          origins:
+          - "*"
+          methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+          headers:
+          - Accept
+          - Accept-Version
+          - Content-Length
+          - Content-MD5
+          - Content-Type
+          - Date
+          - X-Auth-Token
+          - Authorization
+          exposed_headers:
+          - X-Auth-Token
+          credentials: true
+          max_age: 3600
+          preflight_continue: false
 
   - name: ms-conciertos
     url: http://ms-conciertos:3004/api/v1/conciertos
@@ -31,14 +106,64 @@ services:
         paths:
           - /api/conciertos
         strip_path: true
+    plugins:
+      - name: cors
+        config:
+          origins:
+          - "*"
+          methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+          headers:
+          - Accept
+          - Accept-Version
+          - Content-Length
+          - Content-MD5
+          - Content-Type
+          - Date
+          - X-Auth-Token
+          - Authorization
+          exposed_headers:
+          - X-Auth-Token
+          credentials: true
+          max_age: 3600
+          preflight_continue: false
         
-  - name: ms-zonas
+  - name: ms-conciertos-zonas
     url: http://ms-conciertos:3004/api/v1/zonas
     routes:
       - name: zonas-route
         paths:
           - /api/zonas
         strip_path: true
+    plugins:
+      - name: cors
+        config:
+          origins:
+          - "*"
+          methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+          headers:
+          - Accept
+          - Accept-Version
+          - Content-Length
+          - Content-MD5
+          - Content-Type
+          - Date
+          - X-Auth-Token
+          - Authorization
+          exposed_headers:
+          - X-Auth-Token
+          credentials: true
+          max_age: 3600
+          preflight_continue: false
 
   - name: ms-usuarios
     url: http://ms-usuarios:3005/api/v1/usuarios
@@ -47,21 +172,32 @@ services:
         paths:
           - /api/usuarios
         strip_path: true
-
-  - name: ms-asientos
-    url: http://ms-reservas:3001/api/v1
-    routes:
-      - name: asientos-estado-route
-        paths:
-          - /api/zonas
-        strip_path: false
-        methods:
+    plugins:
+      - name: cors
+        config:
+          origins:
+          - "*"
+          methods:
           - GET
-      - name: asientos-bloquear-route
-        paths:
-          - /api/asientos
-        strip_path: false
-        methods:
           - POST
-  
+          - PUT
+          - DELETE
+          - OPTIONS
+          headers:
+          - Accept
+          - Accept-Version
+          - Content-Length
+          - Content-MD5
+          - Content-Type
+          - Date
+          - X-Auth-Token
+          - Authorization
+          exposed_headers:
+          - X-Auth-Token
+          credentials: true
+          max_age: 3600
+          preflight_continue: false
+
+
+
 

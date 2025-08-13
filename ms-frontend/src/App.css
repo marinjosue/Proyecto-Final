@@ -36,3 +36,76 @@
     transform: rotate(360deg);
   }
 }
+
+/* Estilos personalizados para elementos de administrador */
+.admin-link {
+  background: linear-gradient(90deg, #673ab7, #ff4081);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.admin-link:hover {
+  text-shadow: 0 0 5px rgba(255, 64, 129, 0.5);
+  transform: scale(1.05);
+}
+
+/* Estilos para cards de administración */
+.admin-card {
+  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  border: 1px solid #444;
+  transition: all 0.3s ease;
+}
+
+.admin-card:hover {
+  border-color: #ff4081;
+  box-shadow: 0 4px 20px rgba(255, 64, 129, 0.3);
+}
+
+/* Estilos para botones de acción */
+.action-buttons .btn {
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+/* Estilos para zona cards */
+.zona-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.zona-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
+}
+
+.zona-card.selected {
+  border-color: #00bcd4 !important;
+  box-shadow: 0 0 15px rgba(0, 188, 212, 0.5);
+}
+
+/* Animaciones para feedback */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .action-buttons .btn {
+    margin-right: 0;
+    width: 100%;
+  }
+}

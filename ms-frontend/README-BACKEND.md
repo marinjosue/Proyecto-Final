@@ -44,7 +44,7 @@ docker-compose --version
 ### 2. Levantar todo el sistema
 ```bash
 # Clonar el repositorio
-git clone <repository-url>
+git clone https://github.com/marinjosue/Plataforma-Encuentro
 cd ms-Backend
 
 # Iniciar todos los servicios
@@ -57,7 +57,7 @@ docker-compose ps
 ### 3. Configurar Kong API Gateway
 ```bash
 # Aplicar configuración de rutas
-deck gateway sync kong-config.yml --kong-addr http://localhost:8001
+deck gateway sync kong-config.yml --kong-addr http://localhost:8000
 ```
 
 ---
@@ -539,7 +539,6 @@ GET http://localhost:3005/health  # ms-usuarios
 
 ### Funcionalidades pendientes
 - [ ] Implementar WebSockets para notificaciones en tiempo real
-- [ ] Agregar sistema de pagos (Stripe/PayPal)
 - [ ] Implementar caché con Redis
 - [ ] Agregar tests automatizados
 - [ ] Implementar CI/CD pipeline
@@ -561,7 +560,7 @@ GET http://localhost:3005/health  # ms-usuarios
 |------------------|-----------------------------------|--------------------------------------|
 | **Josué Marín**  | ms-reservas, ms-notificaciones   | Gestión de reservas y notificaciones |
 | **Elkin Pabón**  | ms-entradas                      | Generación de entradas y QR         |
-| **José Sanmartín**| ms-conciertos, ms-usuarios      | Gestión de eventos y autenticación  |
+| **Josue Marin**| ms-conciertos, ms-usuarios      | Gestión de eventos y autenticación  |
 
 ---
 
